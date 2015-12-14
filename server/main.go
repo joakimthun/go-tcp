@@ -5,10 +5,6 @@ import (
 	"net"
 )
 
-type Client struct {
-	conn *net.Conn
-}
-
 func main() {
 	l, err := net.Listen("tcp", "localhost:3333")
 	
@@ -40,7 +36,7 @@ func handle(conn net.Conn) {
 		log.Println(err)
 	}
 	
-	_, err = conn.Write([]byte("Hello from server"))
+	_, err = conn.Write([]byte("Hello from server \n"))
 	
 	if err != nil {
 		log.Println(err)

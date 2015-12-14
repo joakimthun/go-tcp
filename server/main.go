@@ -5,6 +5,23 @@ import (
 	"net"
 )
 
+var numConnections = 0
+
+type client struct {
+	Conn net.Conn
+}
+
+func (c *client) Read(buffer []byte) bool {
+	_, err := c.Conn.Read(buffer)
+	if err != nil {
+		c.Conn.Close()
+		log.Println(err)
+		return false
+	}
+	
+	return true
+} 
+
 func main() {
 	l, err := net.Listen("tcp", "localhost:3333")
 	
@@ -23,24 +40,24 @@ func main() {
 			log.Println(err)
 		}
 		
-		go handle(conn)	
+		go handle(conn)
+		
+		numConnections++
+		log.Println("Number of connections:", numConnections)	
 	}
 }
 
 func handle(conn net.Conn) {
-	b := make([]byte, 1024)
+	c := client { conn }
+	buffer := make([]byte, 2048)
 	
-	_, err := conn.Read(b)
-	
-	if err != nil {
-		log.Println(err)
+	for c.Read(buffer) {
+		//log.Println("Received message: ", string(buffer))
+		
+		_, err := conn.Write([]byte("Hello from server \n"))
+		
+		if err != nil {
+			log.Println(err)
+		}
 	}
-	
-	_, err = conn.Write([]byte("Hello from server \n"))
-	
-	if err != nil {
-		log.Println(err)
-	}
-	
-	conn.Close()
 }

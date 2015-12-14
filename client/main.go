@@ -3,28 +3,39 @@ package main
 import (
 	"log"
 	"net"
-	"bufio"
-	"fmt"
+	"time"
+)
+
+const (
+	maxNumConnections = 1000
 )
 
 func main() {
+	numConnections := 0
+	for {
+		if numConnections <= maxNumConnections {
+			go connect()
+			numConnections++
+		}
+	}
+}
+
+func connect() {
 	conn, err := net.Dial("tcp", "localhost:3333")
 	
 	if err != nil {
 		log.Fatal(err)
 	}
 	
-	_, err = conn.Write([]byte("Hello?"))
-	
-	if err != nil {
-		log.Fatal(err)
+	for {
+		write(conn)
+		time.Sleep(100 * time.Millisecond)
 	}
+}
+
+func write(conn net.Conn) error {
+	message := "Hello from client \n"
+	_, err := conn.Write([]byte(message))
 	
-	m, err := bufio.NewReader(conn).ReadString('\n')
-	
-	if err != nil {
-		log.Fatal(err)
-	}
-	
-	fmt.Println(m)
+	return err
 }
